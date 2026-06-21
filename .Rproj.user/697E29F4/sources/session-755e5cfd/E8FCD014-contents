@@ -1,0 +1,882 @@
+---
+title: "Variation of < w > and < v > in Cook Islands Māori"
+subtitle: "A statistical approach"
+author: "Quartz Colvin (they/them)"
+institute: "Rutgers University"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    css: ["rutgers", "rutgers-fonts"]
+    lib_dir: libs
+    includes:
+      after_body: [header.html]
+    nature:
+      ratio: "16:9"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+class: center, middle
+
+# **Introduction**
+
+### Kia orana kātoa! Ko Quartz tōku ingoa. 
+
+### Kā tuatua au nō te Māori ꞌAvaiki Nui (Māori Kūki 'Āirani) i tēia rā.
+
+
+---
+# **Māori ꞌAvaiki Nui** (Cook Islands Māori)
+
+- **Eastern Polynesian** language indigenous to the Realm of New Zealand
+
+- VSO is the unmarked word order
+
+- Closely related to, but definitely different from Aotearoa Māori
+
+--
+
+- Classified as **Endangered** (Rarotonga) or Vulnerable (other islands) and there is little intergenerational transmission 😢 (Nicholas, 2018)
+
+---
+# Cook Islands Māori: Where?
+
+.pull-left[
+```{r, fig.align = "center", echo=FALSE, out.width="200%", fig.cap="Map of Oceania."}
+knitr::include_graphics("./slides/index_files/oceania-map.png")
+```
+]
+
+.pull-right[
+```{r, fig.align = "center", echo=FALSE, out.width="100%", fig.cap="Map of Cook Islands."}
+knitr::include_graphics("./slides/index_files/cook-islands-map.png")
+```
+]
+
+```{r}
+#| label: read-csv
+#| echo: false
+#| message: false
+#| warning: false
+
+library("tidyverse")
+library("tidyr")
+library("here")
+library("lme4")
+library("mgcv")
+library("broom")
+library("ggplot2")
+library(knitr)
+library(kableExtra)
+library("vcd")
+library("sjPlot")
+library("lmerTest")
+library("modelsummary")
+theme_update(# axis labels
+             axis.title = element_text(size = 16),
+             # tick labels
+             axis.text = element_text(size = 16),
+             # title 
+             title = element_text(size = 19))
+
+source(here::here("libs", "libs.R"))
+
+untidy_data <- read_csv(here("untidy_data", "cim-v-w-202410.csv"))
+
+```
+
+---
+
+# The topic
+
+It's known across both Aotearoa (NZ) Māori and CIM that some speakers regularly pronounce [v] as [w], but <b>it isn't clear to anyone who does this more and what conditions it!</b>
+
+--
+
+Today, I show some statistical modeling of w/v tokens' phonetic features, and try to determine a pattern for the alternation.
+
+--
+
+# The questions
+
+1. How does duration of w~v vary by island?
+
+2. How does intensity of w~v vary by island? 
+
+  - **Intensity:** a measure of the sound's power per unit area (basically loudness)
+
+3. Does voicing of w~v vary by island? 
+
+4. Which island(s) have more or less [w] tokens surfacing instead of [v]s? 
+
+---
+
+# Roadmap for today
+
+1. Intro (the language, our questions)
+
+2. The data
+
+3. Duration and Intensity
+
+4. Half-way summary 
+
+5. F0 and F2
+
+6. Conclusion (discussion, implications)
+
+---
+
+class: center, middle
+
+# **The data**
+
+### I work as a contract transcriber on a project documenting CIM, so I got this data from my supervisors (**Ake ē Rolando, meitaki!**)
+
+---
+
+## Raw data: data overload
+
+```{r}
+#| label: glimpse-cim
+#| message: false
+#| echo: false
+#| warning: false
+
+glimpse(untidy_data)
+
+```
+
+
+**Omg....**
+
+---
+
+# Raw data: how did they get all this data?
+
+[PARADISEC corpus](https://catalog.paradisec.org.au/repository/SN1)
+
+Force-aligned by phoneme in Praat (Boersma, P., & Weenink, D. 2024)
+
+Praat TextGrids were extracted from Praat with the acoustic measurements (Coto-Solano et al. 2018)
+
+```{r, fig.align = "center", echo=FALSE, out.width="75%", fig.cap="Praat TextGrid example (Coto-Solano et al. 2018)."}
+knitr::include_graphics("./slides/index_files/textgrid.png")
+```
+
+---
+## Raw data: values
+
+- **Speaker:** just their initials (no 'id' column)
+
+- **Island:**  either Atiu, Mauke, Penrhyn, or Rarotonga
+
+- **Filename:** refers to the audio file this was extracted from
+
+--
+
+- **PreviousLabel**/**FollowingLabel:** phoneme that precedes/follows
+
+- **Start**/**End:** the start and end times for that phoneme
+
+- **Duration:** *total* duration of the phoneme
+
+--
+
+- **F0.point:** f0 measured in Hz at that percent of the phoneme's duration
+
+- **F2_midpoint:** f2 measured in Hz at the midpoint of the phoneme
+
+- **Intensity_midpoint:** intensity midpoint of the phoneme
+
+### These are a lot of values- we won't need all of them!
+
+
+---
+## Data overload: **focus on these ones!**
+
+- **Speaker:** just their initials (no 'id' column)
+
+- **Island:**  either Atiu, Mauke, Penrhyn, or Rarotonga
+
+- **Duration:** *total* duration of the phoneme
+
+--
+
+- **F0.point:** f0 measured in Hz at that percent of the phoneme's duration
+
+- **F2_midpoint:** f2 measured in Hz at the midpoint of the phoneme
+
+- **Intensity_midpoint:** intensity midpoint of the phoneme
+
+---
+
+class: center, middle
+
+# Part 1: **Duration**
+
+
+---
+# Duration by island: Tidy data
+
+We will only keep the columns "speaker", "island", "word", and "duration" for this question.
+
+```{r}
+#| label: tidy-duration
+#| echo: false
+#| message: false
+#| warning: false
+
+tidy_dur <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+  arrange(island, Word) |>  
+  select(speaker, island, word = Word, duration) |>
+  write_csv(here("tidy_data", "tidy_dur.csv"))
+
+```
+
+
+```{r}
+#| label: glimpse-duration
+#| echo: false
+#| warning: false
+#| message: false
+
+
+knitr::kable(head(tidy_dur), format = "html") %>%
+  kable_styling() %>%
+  column_spec(1:4, width = "1in") 
+
+```
+
+---
+# Duration by island: Plot
+
+.pull-left[
+
+???summarize the plot 
+```{r}
+#| label: duration-plot
+#| warning: false
+#| message: false
+#| echo: false
+
+plot_dur <- tidy_dur |>
+  ggplot() +
+  aes(x = island, y = duration, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] duration by island",
+    x = "Island",
+    y = "Duration"
+  ) 
+
+
+# 2. Generate the base mosaic plot
+#mosaicplot(tidy_dur, 
+#           main = "Compare [v] duration by island",
+#           xlab = "Island", 
+#           ylab = "Duration", 
+#           color = c("skyblue", "chocolate", "red", "green"))
+
+#plot_dur <- xtabs(~island + duration, data = tidy_dur)
+#mosaic(island, gp = shading_max, 
+#            split_vertical = TRUE, 
+#            main="Arthritis: [Treatment] [Improved]")
+
+```
+
+
+]
+
+--
+
+.pull-right[
+```{r, fig.height=10, fig.width=9, fig.retina=3}
+#| label: print-dur
+#| echo: false
+#| message: false
+#| warning: false
+
+print(plot_dur)
+```
+]
+
+---
+
+## Duration by island: Model
+
+```{r}
+#| label: mod-duration
+#| echo: true
+#| message: false
+#| warning: false
+
+mod_dur <- lmer(duration ~ island + (1|speaker) + (1|word), data = tidy_dur)
+
+```
+
+???explain model type - nested model comparison / lmer() - linear mixed-effects models (LMMs) fit to data where observations are grouped or nested, such as repeated measures, longitudinal data, or blocked experimental designs
+
+
+
+---
+
+class: middle, center
+
+```{r}
+#| label: print-dur-summary
+#| echo: false
+#| message: false
+#| warning: false
+
+tab_model(mod_dur, string.intercept = "island [Atiu]")
+
+```
+
+---
+
+# Duration by island: Model
+
+???discuss findings of this model
+
+---
+class: center, middle
+
+# Part 2: **Intensity**
+
+```{r, fig.align = "center", echo=FALSE, out.width="75%", fig.cap="Intensity is basically loudness."}
+knitr::include_graphics("./slides/index_files/dog-intensity.svg")
+```
+
+---
+
+# Intensity by island: Tidy
+
+For this one, we will keep the columns "speaker", "island", "word", and "intensity_midpoint" (renamed as "intensity")
+
+```{r}
+#| label: tidy-intensity
+#| echo: false
+#| warning: false
+#| message: false
+
+tidy_intense <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+  arrange(island, Word) |>  
+  select(speaker, island, word = Word, intensity = intensity_midpoint) |>
+  write_csv(here("tidy_data", "tidy_intense.csv"))
+
+```
+
+```{r}
+#| label: glimpse-intense
+#| echo: false
+#| message: false
+#| warning: false
+
+#knitr::kable(head(tidy_intense), format = "html", column_spec(1:4, width="1in")) 
+
+knitr::kable(head(tidy_intense), format = "html") %>%
+  kable_styling() %>%
+  column_spec(1:4, width = "1in") 
+
+```
+
+---
+# Intensity by island: Plot
+
+.pull-left[
+???explain plot
+
+```{r}
+#| label: intensity-by-island
+#| warning: false
+#| message: false
+#| echo: false
+#| out-width: "60%"
+
+plot_intense <- tidy_intense |>
+  ggplot() +
+  aes(x = island, y = intensity, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] intensity by island",
+    x = "Island",
+    y = "Intensity"
+  ) 
+
+```
+]
+--
+
+??change plot type???
+
+.pull-right[
+```{r, fig.height=10, fig.width=9, fig.retina=3}
+#| label: print-intensity-plot
+#| echo: false
+#| warning: false
+#| message: false
+
+print(plot_intense)
+
+```
+]
+
+---
+# Intensity by island: Model
+
+???explain model type
+
+```{r}
+#| label: mod-intensity
+#| echo: true
+#| message: false
+#| warning: false
+
+mod_intense <- lmer(intensity ~ island + (1|speaker) + (1|word), data = tidy_intense)
+
+```
+
+---
+
+class: center, middle
+
+```{r}
+#| label: summary-intensity
+#| echo: false
+#| warning: false
+#| message: false
+
+tab_model(mod_intense, string.intercept = "island [Atiu]")
+
+
+```
+
+---
+
+## Intensity by island: Model
+
+???summarize results of this model
+
+---
+
+class: center, middle
+
+# **Interim summary**
+
+```{r, fig.align = "center", echo=FALSE, out.width="75%", fig.cap="Encouraging stock image."}
+knitr::include_graphics("./slides/index_files/encouraging.jpg")
+```
+
+---
+
+# Interim summary
+
+### Duration
+
+- Penrhyn has the longest **average** w~v durations and Rarotonga has the shortest
+
+- Penrhyn also has the largest **range** of durations
+
+- Atiu and Mauke have pretty similar **average** w~v durations
+
+--
+
+### Intensity
+
+- Penrhyn has the **lowest average** intensity midpoint (its entire range is lowest)
+
+--
+
+- Mauke and Rarotonga have pretty **large ranges**, but for Rarotonga the values are more concentrated around the mean (the box itself is smaller)
+
+- Atiu has the **smallest range** for intensity and the values are concentrated around the mean 
+
+--
+
+...Maybe Atiu doesn't vary as much because only one speaker contributed data for the Atiu portion? 
+
+---
+
+# Next half: **F0** and **F2**
+
+- **[w]** *can* be voiceless and its **F0** is either super low or absent (less than 80 Hz = voiceless?)
+
+- **[v]** is voiced, so **F0** is always there and is higher than for [w]
+
+--
+
+- **[w]** has a **lower F2** than [v]
+
+
+--
+
+### Goals for these two models...
+
+- Compare **f0** values to see how **voicing** for w~v differs across the four islands
+
+- Compare **f2** values to see if **[w] or [v]** is the surface form of w~v
+
+
+---
+
+class: center, middle
+
+# Part 3: F0 (voicing)
+
+```{r, fig.align = "center", echo=FALSE, out.width="75%"}
+knitr::include_graphics("./slides/index_files/f0-example.jpg")
+```
+
+---
+# F0 by island: Tidy
+
+We will split the "f0_50.point" column into "percent" and "f0", and keep the columns "speaker", "island", "word", "d0", and "duration" for this question.
+
+```{r}
+#| label: tidy-f0
+#| echo: false
+#| message: false
+#| warning: false
+
+tidy_f0 <- untidy_data |>
+  filter(TextGridLabel == "v") |>
+  pivot_longer(
+    cols = c("f0_50.point"), 
+    names_to = "percent",
+    values_to = "f0"
+  ) |>
+  arrange(island, Word) |>  
+  select(speaker, island, word = Word, f0, duration) |>
+  write_csv(here("tidy_data", "tidy_f0.csv"))
+
+```
+
+- I limited F0 to *F0 at 50%* to limit **autocorrelation.**
+
+???make image to show what autocorrelation is
+
+--
+
+```{r}
+#| label: glimpse-f0
+#| echo: false
+#| message: false
+#| warning: false
+
+knitr::kable(head(tidy_f0), format = "html") %>%
+  kable_styling() %>%
+  column_spec(1:4, width = "1in") 
+```
+
+
+---
+
+class: center, middle
+
+```{r}
+#| label: plot-f0
+#| echo: false
+#| message: false
+#| warning: false
+
+f0_plot <- tidy_f0 |>
+  ggplot() + 
+  aes(x = duration, y = f0, color = speaker) +
+  geom_point() +
+  geom_smooth(
+    method="glm",
+    color="black",
+    method.args = list(family = "poisson")
+  ) +
+  facet_wrap(.~island, scales = 'free', nrow = 2) +
+  theme(
+    # Resize the facet header/strip text
+    strip.text = element_text(size = 10, face = "bold"),
+    # Resize x and y axis tick values
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    # Resize main axis titles
+    axis.title = element_text(size = 12)
+  ) +
+  labs(
+    title = "Compare F0 across islands", 
+    x = "Duration", 
+    y = "F0 (Hz)"
+  ) 
+```
+
+```{r, out.width="62%", out.height="62%"}
+#| label: print-f0-plot
+#| echo: false
+#| message: false
+#| warning: false
+
+print(f0_plot)
+
+```
+
+---
+
+# F0 by island: Plot
+
+explain plot???
+
+
+---
+# F0 by island: Model
+
+???explain model
+
+```{r}
+#| label: mod-f0
+#| echo: false
+#| message: false
+#| warning: false
+
+mod_f0 <- lmer(f0 ~ island + (1|speaker) + (1|word), data = tidy_f0)
+
+```
+
+---
+
+class: center, middle
+
+```{r}
+#| label: summarize-f0
+#| echo: false
+#| message: false
+#| warning: false
+
+tab_model(mod_f0, string.intercept = "island [Atiu]")
+
+```
+
+
+---
+
+# F0 by island: Model
+
+???explain results
+
+
+
+
+
+
+
+---
+
+class: center, middle
+
+# Part 4: **F2**
+
+### w or v?
+
+---
+
+# F2 by island: Tidy
+
+For this one, we only keep the rows that have the TextGridLabel "v".
+
+Of those, we keep the values for "speaker", "island", "word", and "F2_midpoint" which is renamed as "f2" here.
+
+```{r}
+#| label: tidy-f2
+#| echo: false
+#| message: false
+#| warning: false
+
+tidy_f2 <- untidy_data |>
+  filter(TextGridLabel == "v") |>
+  arrange(island, Word) |>  
+  select(speaker, island, word = Word, f2 = F2_midpoint) |>
+  write_csv(here("tidy_data", "tidy_f2.csv"))
+
+```
+
+```{r}
+#| label: glimpse-f2
+#| echo: false
+#| message: false
+#| warning: false
+
+knitr::kable(head(tidy_f2), format = "html") %>%
+  kable_styling() %>%
+  column_spec(1:4, width = "1in") 
+
+```
+
+---
+
+# F2 by island: Plot 
+
+.pull-left[
+
+???explain plot
+```{r}
+#| label: plot-f2
+#| echo: false
+#| message: false
+#| warning: false
+
+f2_plot <- tidy_f2 |>
+  ggplot() +
+  aes(x = island, y = f2, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] F2 by island",
+    x = "Island",
+    y = "F2 (Hz)"
+  )
+
+```
+]
+
+--
+
+.pull-right[
+```{r, fig.height=10, fig.width=9, fig.retina=3}
+#| label: print-f2-plot
+#| echo: false
+#| warning: false
+#| message: false
+
+print(f2_plot)
+
+```
+]
+
+---
+# F2 by island: Model 
+
+???explain model
+```{r}
+#| label: mod-f2
+#| echo: true
+#| message: false
+#| warning: false
+
+mod_f2 <- lmer(f2 ~ island + (1|speaker) + (1|word), data = tidy_f2)
+
+```
+
+---
+
+class: center, middle
+
+```{r}
+#| label: summary-f2
+#| message: false
+#| echo: false
+#| warning: false
+
+tab_model(mod_f2, string.intercept = "island [Atiu]")
+
+
+```
+
+---
+
+# F2 by island: Model
+
+???explain model results
+
+
+
+
+
+
+
+
+---
+# Formant results 
+
+### Great, so what does this all mean?
+
+**F0**
+
+- **it seems that Mauke has the highest number of voiceless [w]s, when [w] is realized**
+
+- the other 3 islands typically have f0 > 100 Hz, so these tokens are voiced
+
+--
+
+- **i predict** that f2 values will say that Mauke also has the most [w]s surfacing
+
+
+---
+# Formant results
+
+### The w~v question 
+
+- **Recall** that a 'low f2' indicating [w] is <850 Hz
+
+--
+
+- **all** of these 4 islands have *some* instances of [w]
+
+- their means are all higher than this cut-off, so they all *averagely* surface as [v]
+
+--
+
+- Atiu on average has the most amount of [w]s surfacing (Atiu's mean is lowest)
+
+---
+
+class: center, middle
+
+# Discussion & Implications
+
+---
+
+# Discussion
+
+???fill in
+
+---
+
+# Implications
+
+???fill in
+
+---
+
+# Conclusion
+
+???fill in
+
+---
+
+class: middle, center
+
+# Meitaki!
+
+# Thank you! 
+
+---
+
+# References
+
+Nicholas, S. A. (2018). Language contexts: Te Reo Māori o Te Pae Tonga o Te Kuki Airani also known as Southern Cook Islands Māori. Language Documentation and Description, 15, 36-64. doi: https://doi.org/10.25894/ldd138.
+
+Boersma, P., & Weenink, D. (2024). Praat: doing phonetics by computer [computer program].
+Version 6.4, retrieved from https://praat.org. (Available at https://praat.org)
+
+Coto-Solano, R., Nicholas, S. A., & Wray, S. (2018). Development of natural language processing
+tools for cook islands m¯aori. In Proceedings of australasian language technology association
+workshop (pp. 26–33).
+
+Nicholas, S. A. (2012). Te vairanga tuatua o te te reo maori o te pae tonga: Cook islands
+maori (southern dialects). catalog.paradisec.org.au. Retrieved from https://dx.doi.org/
+10.4225/72/56E9793466307 (Collection SN1)
+
+Phonetics and phonology. (2014). The Education University of Hong Kong, Department of
+Linguistics and Modern Language Studies. Retrieved from https://corpus.eduhk.hk/
+english pronunciation/index.php/3-2-acoustic-aspects-of-consonants/
+
+R Core Team. (2024). R: A language and environment for statistical computing [Computer
+software manual]. Vienna, Austria. Retrieved from https://www.R-proj
