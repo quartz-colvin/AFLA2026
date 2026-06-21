@@ -633,7 +633,7 @@ knitr::include_graphics("./slides/index_files/encouraging.jpg")
 
 class: center, middle
 
-# Part 3: F0 (voicing)
+# Part 3: **F0** 
 
 ```{r, fig.align = "center", echo=FALSE, out.width="75%"}
 knitr::include_graphics("./slides/index_files/f0-example.jpg")
@@ -978,7 +978,7 @@ knitr::include_graphics("./slides/index_files/counts-plot.png")
 
 --
 
-## Voicing (F0)
+### Voicing (F0)
 
 - Island had an effect on F0! 
 
@@ -988,7 +988,7 @@ knitr::include_graphics("./slides/index_files/counts-plot.png")
 
 ### The w~v question 
 
-- **Recall** that a 'low f2' indicating [w] is <850 Hz
+- **Recall** that a 'low f2' indicating [w] is < 850 Hz
 
 --
 
