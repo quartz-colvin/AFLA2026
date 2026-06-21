@@ -8,8 +8,6 @@ output:
   xaringan::moon_reader:
     css: ["rutgers", "rutgers-fonts"]
     lib_dir: libs
-    includes:
-      after_body: [header.html]
     nature:
       ratio: "16:9"
       highlightStyle: github
@@ -27,17 +25,19 @@ class: center, middle
 
 
 ---
-# **Māori ꞌAvaiki Nui** (Cook Islands Māori)
+# The language: **Māori ꞌAvaiki Nui**
+
+- Also known as <span style="color:green">Cook Islands Māori</span> (CIM)
 
 - **Eastern Polynesian** language indigenous to the Realm of New Zealand
 
 - VSO is the unmarked word order
 
-- Closely related to, but definitely different from Aotearoa Māori
+- Closely related to, but definitely different from Aotearoa NZ Māori
 
 --
 
-- Classified as **Endangered** (Rarotonga) or Vulnerable (other islands) and there is little intergenerational transmission 😢 (Nicholas, 2018)
+- Classified as **Endangered** (Rarotonga) or **Vulnerable** (other islands) and there is little intergenerational transmission 😢 (Nicholas, 2018)
 
 ---
 # Cook Islands Māori: Where?
@@ -49,7 +49,7 @@ knitr::include_graphics("./slides/index_files/oceania-map.png")
 ]
 
 .pull-right[
-```{r, fig.align = "center", echo=FALSE, out.width="100%", fig.cap="Map of Cook Islands."}
+```{r, fig.align = "center", echo=FALSE, out.width="90%", fig.cap="Map of Cook Islands."}
 knitr::include_graphics("./slides/index_files/cook-islands-map.png")
 ```
 ]
@@ -90,7 +90,7 @@ untidy_data <- read_csv(here("untidy_data", "cim-v-w-202410.csv"))
 
 # The topic
 
-It's known across both Aotearoa (NZ) Māori and CIM that sometimes people pronounce [v] as [w], but **it isn't clear to anyone who does this more and what conditions it!**
+It's known across both Aotearoa NZ Māori and CIM that sometimes people pronounce [v] as [w], but **it isn't clear to anyone who does this more and what conditions it!**
 
 --
 
@@ -100,13 +100,13 @@ Today, I show my attempt at some statistical modeling of w/v tokens' phonetic fe
 
 # The questions
 
-1. How does duration of w~v vary by island?
+1. How does <b>duration</b> of w~v vary by island?
 
-2. How does intensity of w~v vary by island? 
+2. How does <b>intensity</b> of w~v vary by island? 
 
-  - **Intensity:** a measure of the sound's power per unit area (basically loudness)
+  - **Intensity:** a measure of the sound's power per unit area (you can think of it as loudness)
 
-3. Does voicing of w~v vary by island? (determined by F0)
+3. Does <b>voicing</b> of w~v vary by island? (determined by F0)
 
 4. Which island(s) have more or less [w] tokens surfacing instead of [v]s? (determined by F2)
 
@@ -136,7 +136,21 @@ class: center, middle
 
 ---
 
-## Raw data: data overload
+# Raw data: how did they get all this data?
+
+[PARADISEC corpus](https://catalog.paradisec.org.au/repository/SN1)
+
+Force-aligned by phoneme in Praat (Boersma, P., & Weenink, D. 2024)
+
+Praat TextGrids were extracted from Praat with the acoustic measurements (Coto-Solano et al. 2018)
+
+```{r, fig.align = "center", echo=FALSE, out.width="65%", fig.cap="Praat TextGrid example (Coto-Solano et al. 2018)."}
+knitr::include_graphics("./slides/index_files/textgrid.png")
+```
+
+---
+
+## Raw data: SO MUCH....
 
 ```{r}
 #| label: glimpse-cim
@@ -150,20 +164,6 @@ glimpse(untidy_data)
 
 
 **Omg....**
-
----
-
-# Raw data: how did they get all this data?
-
-[PARADISEC corpus](https://catalog.paradisec.org.au/repository/SN1)
-
-Force-aligned by phoneme in Praat (Boersma, P., & Weenink, D. 2024)
-
-Praat TextGrids were extracted from Praat with the acoustic measurements (Coto-Solano et al. 2018)
-
-```{r, fig.align = "center", echo=FALSE, out.width="75%", fig.cap="Praat TextGrid example (Coto-Solano et al. 2018)."}
-knitr::include_graphics("./slides/index_files/textgrid.png")
-```
 
 ---
 ## Raw data: values
@@ -190,7 +190,7 @@ knitr::include_graphics("./slides/index_files/textgrid.png")
 
 - **Intensity_midpoint:** intensity midpoint of the phoneme
 
-### These are a lot of values- we won't need all of them!
+### These are a lot of values here- we won't need all of them!
 
 
 ---
@@ -251,9 +251,10 @@ knitr::kable(head(tidy_dur), format = "html") %>%
 ```
 
 ---
+.pull-left[
+
 # Duration by island: Plot
 
-.pull-left[
 
 **Penrhyn**
 
@@ -269,7 +270,7 @@ knitr::kable(head(tidy_dur), format = "html") %>%
 
 - the <b>smallest range</b>
 
-- the <b>lowest mean</b>.
+- the <b>lowest mean</b>
 
 
 ```{r}
@@ -335,7 +336,7 @@ mod_dur <- lmer(duration ~ island + (1|speaker) + (1|word), data = tidy_dur)
 ```
 
 
-I used **linear mixed-effects models** ('lmer' in R) for the four features I'm investigating
+I used **linear mixed-effects models** ('lmer' in R) for the four phonetic features I'm investigating
 
 - For duration and intensity I also did a nested model comparison ('anova' in R)
 
@@ -379,7 +380,7 @@ tab_model(mod_dur, string.intercept = "island [Atiu]")
 
   - This wasn't an extremely reliable model
 
-- Standard deviation was 0 
+- <b>Standard deviation</b> was 0 
 
 
 ---
@@ -426,9 +427,11 @@ knitr::kable(head(tidy_intense), format = "html") %>%
 ```
 
 ---
-# Intensity by island: Plot
 
 .pull-left[
+
+# Intensity by island: Plot
+
 
 Intensity **ranges were much larger** for all islands than they were for duration!
 
@@ -547,15 +550,11 @@ knitr::include_graphics("./slides/index_files/nesting-dolls.jpg")
 
 # Intensity and duration: Nested models
 
-```{r, fig.align = "center", echo=FALSE, out.width="75%", fig.cap="Nested model summary (duration and intensity)."}
-knitr::include_graphics("./slides/index_files/dur-intense-nested-summary.png")
-```
-
 **Duration:**
 
 - Were well-fit and accurate to the population, based on a very small <b>Akaike Information Criterion (AIC)</b> value and a large <b>log-likelihood (logLik)</b> value.
 
-- Tthe **island a speaker was from made the greatest difference in duration**
+- The **island a speaker was from made the greatest difference in duration**
 
 --
 
@@ -570,11 +569,19 @@ was less relevant.
 
 ---
 
+# Intensity and duration: Nested models
+
+```{r, fig.align = "center", echo=FALSE, out.width="100%", fig.cap="Nested model summary (duration and intensity)."}
+knitr::include_graphics("./slides/index_files/dur-intense-nested-summary.png")
+```
+
+---
+
 class: center, middle
 
 # **Interim summary**
 
-```{r, fig.align = "center", echo=FALSE, out.width="65%", fig.cap="Encouraging stock image."}
+```{r, fig.align = "center", echo=FALSE, out.width="50%", fig.cap="Encouraging stock image."}
 knitr::include_graphics("./slides/index_files/encouraging.jpg")
 ```
 
@@ -600,7 +607,7 @@ knitr::include_graphics("./slides/index_files/encouraging.jpg")
 
 - Atiu has the **smallest range** for intensity and the values are concentrated around the mean 
 
-- Atiu, Mauke and Rarotonga hd fairly similar **means**
+- Atiu, Mauke and Rarotonga had fairly similar **means**
 
 --
 
@@ -616,17 +623,9 @@ knitr::include_graphics("./slides/index_files/encouraging.jpg")
 
 --
 
-- **[w]** has a **lower F2** than [v]
+- **[w]** has a **lower F2** than [v] (my assumed cutoff point will be 850 Hz)
 
 **Disclaimer:** this may not exactly correspond to the perceptual boundary between [w] and [v] in the language- this hasn't been tested
-
---
-
-### Goals for these two models...
-
-- Compare **f0** values to see how **voicing** for w~v differs across the four islands
-
-- Compare **f2** values to see if **[w] or [v]** is the surface form of w~v
 
 
 ---
@@ -750,7 +749,7 @@ print(f0_plot)
 
 - large range, generally from 150-250 Hz
 
-The islands with a nonsignificant number of tokens <b> < 100 Hz is Atiu and Mauke</b>, so I would guess that these two islands are more likely to pronounce "v" as [w], as its voiceless
+The islands with a nonsignificant number of tokens <b> < 100 Hz are Atiu and Mauke</b>, so I would guess that these two islands are more likely to pronounce "v" as [w]
 
 ---
 
@@ -794,15 +793,15 @@ tab_model(mod_f0, string.intercept = "island [Atiu]")
 
   - A p-value < 0.05 means no effect was observed
 
-  - There was an observed effect in voicing for all islands except Atiu, but a greater effect for Mauke and Penrhyn (huge effect)
+  - There was an observed effect in voicing for all islands except Atiu, but a <b>greater effect for Mauke and Penrhyn</b> (huge effect)
 
 **Random effects:**
 
-- Standard deviation 822.23
+- <b>Standard deviation</b> 822.23
 
   - Data was very spread out from the mean
 
-- **Intraclass correlation** (< 0.5 is poor reliability, > 0.9 is excellent reliability)
+- <b>Intraclass correlation</b> (< 0.5 is poor reliability, > 0.9 is excellent reliability)
 
   - ICC was 0.47, so this was *not* a very reliable model 
 
@@ -824,9 +823,7 @@ class: center, middle
 
 # F2 by island: Tidy
 
-For this one, we only keep the rows that have the TextGridLabel "v".
-
-Of those, we keep the values for "speaker", "island", "word", and "F2_midpoint" which is renamed as "f2" here.
+We keep the values for "speaker", "island", "word", and "F2_midpoint" which is renamed as "f2".
 
 ```{r}
 #| label: tidy-f2
@@ -856,9 +853,10 @@ knitr::kable(head(tidy_f2), format = "html") %>%
 
 ---
 
+.pull-left[
+
 # F2 by island: Plot 
 
-.pull-left[
 
 ```{r}
 #| label: plot-f2
@@ -929,7 +927,7 @@ mod_f2 <- lmer(f2 ~ island + (1|speaker) + (1|word), data = tidy_f2)
 
 **Random effects:**
 
-- standard deviation was huge (155389.93), so data was **extremely** spread out 
+- Standard deviation was huge (155,389.93), so data was ***extremely*** spread out 
 
 - Intraclass correlation (0.21) indicated this was the least reliable model
 
@@ -952,23 +950,21 @@ tab_model(mod_f2, string.intercept = "island [Atiu]")
 
 # F2 by island: Counts
 
-.pull-left[
 I manually calculated the percentages of [w] surfacing for each island
+.pull-left[
+- **Atiu** data had [w] **17.80%** of the time
 
-- Atiu data had [w] 17.80% of the time
-
-- Mauke data had [w] 5.75% of the time
-
-- Penrhyn data had [w] 4.12% of the time
-
-- Rarotonga data had [w] 3.21% of the time
+- **Mauke** data had [w] **5.75%** of the time
 ]
-
 .pull-right[
+- **Penrhyn** data had [w] **4.12%** of the time
+
+- **Rarotonga** data had [w] **3.21%** of the time
+]
 ```{r, fig.align = "center", echo=FALSE, out.width="50%"}
 knitr::include_graphics("./slides/index_files/counts-plot.png")
 ```
-]
+
 
 ---
 
@@ -982,7 +978,7 @@ knitr::include_graphics("./slides/index_files/counts-plot.png")
 
 - Island had an effect on F0! 
 
-- Mauke and Penrhyn had the largest effect
+- <b>Mauke and Penrhyn had the largest effect</b>
 
 --
 
@@ -1044,6 +1040,8 @@ The "word" parameter didn't influence things in any of these models, so it's lik
 
 "Island" seemed to affect everything *except* F2 directly
 
+--
+
 **Voicing** might be affecting whether "v" surfaces as "w"! 
 
 - <b>Further investigation</b> into the alternation should look at **voicing in the phonology**
@@ -1056,22 +1054,22 @@ The "word" parameter didn't influence things in any of these models, so it's lik
 
 class: middle, center
 
-# Meitaki!
+# <span style="color:green">Meitaki!</span>
 
-# Ngā mihi nui!
+# <span style="color:blue">Ngā mihi nui!</span>
 
-# Thank you! 
+# <span style="color:red">Thank you!</span>
 
 ---
 
 # References
 
-Nicholas, S. A. (2018). Language contexts: Te Reo Māori o Te Pae Tonga o Te Kuki Airani also known as Southern Cook Islands Māori. Language Documentation and Description, 15, 36-64. doi: https://doi.org/10.25894/ldd138.
-
 Boersma, P., & Weenink, D. (2024). Praat: doing phonetics by computer [computer program]. Version 6.4, retrieved from https://praat.org. (Available at https://praat.org)
 
 Coto-Solano, R., Nicholas, S. A., & Wray, S. (2018). Development of natural language processing tools for Cook Islands Māori. In Proceedings of Australasian Language Technology Association
 Workshop (pp. 26–33).
+
+Nicholas, S. A. (2018). Language contexts: Te Reo Māori o Te Pae Tonga o Te Kuki Airani also known as Southern Cook Islands Māori. Language Documentation and Description, 15, 36-64. doi: https://doi.org/10.25894/ldd138.
 
 Nicholas, S. A. (2012). Te vairanga tuatua o te te reo māori o te pae tonga: Cook Islands Māori (southern dialects). catalog.paradisec.org.au. Retrieved from https://dx.doi.org/
 10.4225/72/56E9793466307 (Collection SN1)
