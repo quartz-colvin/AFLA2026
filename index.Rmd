@@ -23,6 +23,7 @@ class: center, middle
 
 ### Kā tuatua au nō te Māori ꞌAvaiki Nui (Māori Kūki 'Āirani) i tēia rā.
 
+### Meitaki, **Rolando Coto-Solano** and **Ake Nicholas**, with whom this project would not have been possible!
 
 ---
 # The language: **Māori ꞌAvaiki Nui**
