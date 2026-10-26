@@ -1078,3 +1078,204 @@ Nicholas, S. A. (2012). Te vairanga tuatua o te te reo māori o te pae tonga: Co
 Phonetics and phonology. (2014). The Education University of Hong Kong, Department of Linguistics and Modern Language Studies. Retrieved from https://corpus.eduhk.hk/english pronunciation/index.php/3-2-acoustic-aspects-of-consonants/
 
 R Core Team. (2024). R: A language and environment for statistical computing [Computer software manual]. Vienna, Austria. Retrieved from https://www.R-proj
+
+---
+
+class: center, middle
+
+# Running each variable by *person* instead of *island*
+
+---
+
+.pull-left[
+# Duration by person
+
+```{r}
+#| label: mod-duration-psn
+#| echo: false
+#| message: false
+#| warning: false
+
+mod_dur_psn <- lmer(duration ~ speaker + (1|island) + (1|word), data = tidy_dur)
+
+plot_dur_psn <- tidy_dur |>
+  ggplot() +
+  aes(x = speaker, y = duration, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] duration by speaker",
+    x = "Speaker",
+    y = "Duration"
+  )
+
+print(plot_dur_psn)
+
+```
+]
+
+
+.pull-right[
+```{r}
+#| label: print-dur-psn-summary
+#| echo: false
+#| message: false
+#| warning: false
+
+#summary(mod_dur_psn)
+
+tab_model(mod_dur_psn, string.intercept = "speaker [AAN]")
+
+
+```
+]
+
+
+---
+
+.pull-left[
+
+# Intensity by person
+
+```{r}
+#| label: mod-intense-psn
+#| echo: false
+#| message: false
+#| warning: false
+
+mod_intense_psn <- lmer(intensity ~ speaker + (1|island) + (1|word), data = tidy_intense)
+
+plot_intense_psn <- tidy_intense |>
+  ggplot() +
+  aes(x = speaker, y = intensity, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] intensity by speaker",
+    x = "Speaker",
+    y = "Intensity"
+  )
+
+print(plot_intense_psn)
+
+```
+]
+
+
+.pull-right[
+```{r}
+#| label: print-intense-psn-summary
+#| echo: false
+#| message: false
+#| warning: false
+
+#summary(mod_intense_psn, string.intercept = "speaker [AAN]")
+tab_model(mod_intense_psn, string.intercept = "speaker [AAN]")
+
+
+```
+]
+
+---
+
+.pull-left[
+
+# F0 by person 
+
+```{r}
+#| label: mod-f0-psn
+#| echo: false
+#| message: false
+#| warning: false
+
+mod_f0_psn <- lmer(f0 ~ speaker + (1|island) + (1|word), data = tidy_f0)
+
+plot_f0_psn <- tidy_f0 |>
+  ggplot() +
+  aes(x = speaker, y = f0, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] F0 by speaker",
+    x = "Speaker",
+    y = "F0"
+  )
+
+print(plot_f0_psn)
+
+```
+]
+
+
+.pull-right[
+```{r}
+#| label: print-f0-psn-summary
+#| echo: false
+#| message: false
+#| warning: false
+
+#summary(mod_f0_psn, string.intercept = "speaker [AAN]")
+tab_model(mod_f0_psn, string.intercept = "speaker [AAN]")
+
+
+```
+]
+
+---
+
+.pull-left[
+
+# F2 by person
+
+```{r}
+#| label: mod-f2-psn
+#| echo: false
+#| message: false
+#| warning: false
+
+mod_f2_psn <- lmer(f2 ~ speaker + (1|island) + (1|word), data = tidy_f2)
+
+plot_f2_psn <- tidy_f2 |>
+  ggplot() +
+  aes(x = speaker, y = f2, color = island) +
+  geom_boxplot() +
+  labs(
+    title = "Compare [v] F2 by speaker",
+    x = "Speaker",
+    y = "F2"
+  )
+
+print(plot_f2_psn)
+
+```
+]
+
+
+.pull-right[
+```{r}
+#| label: print-f2-psn-summary
+#| echo: false
+#| message: false
+#| warning: false
+
+#summary(mod_f2_psn, string.intercept = "speaker [AAN]")
+tab_model(mod_f2_psn, string.intercept = "speaker [AAN]")
+
+```
+]
+
+---
+
+
+```{r}
+#| label: flextable
+#| echo: false
+#| message: false
+#| warning: false
+
+modelsummary::msummary(list("Duration" = mod_dur_psn, 
+                            "Intensity" = mod_intense_psn,
+                            "F0" = mod_f0_psn, 
+                            "F2" = mod_f2_psn),
+                       output = 'flextable', 
+                       caption = "Each Variable by Person")
+
+```
+
