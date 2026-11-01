@@ -70,6 +70,7 @@ library("broom")
 library("ggplot2")
 library(knitr)
 library(kableExtra)
+library("corrplot")
 library("vcd")
 library("sjPlot")
 library("lmerTest")
@@ -1278,4 +1279,22 @@ modelsummary::msummary(list("Duration" = mod_dur_psn,
                        caption = "Each Variable by Person")
 
 ```
+
+---
+
+# Corrplot stuff
+
+```{r}
+#| label: dur-psn-corrplot
+#| echo: false
+#| message: false
+#| warning: false
+
+
+
+```
+
+
+
+
 
