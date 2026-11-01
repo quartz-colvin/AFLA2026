@@ -70,6 +70,7 @@ library("broom")
 library("ggplot2")
 library(knitr)
 library(kableExtra)
+library("Hmisc")
 library("corrplot")
 library("vcd")
 library("sjPlot")
@@ -1285,12 +1286,48 @@ modelsummary::msummary(list("Duration" = mod_dur_psn,
 # Corrplot stuff
 
 ```{r}
+#| label: retidy
+#| message: false
+#| echo: false
+#| warning: false
+
+all_tidy <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+    pivot_longer(
+    cols = c("f0_50.point"), 
+    names_to = "percent",
+    values_to = "f0"
+  ) |>
+  mutate(speaker_id = as.numeric(fct_inorder(speaker)),
+         island_id = as.numeric(fct_inorder(island))) |>
+  arrange(speaker_id, island) |>  
+  select(speaker_id, island_id, duration, intensity = intensity_midpoint, f0, f2 = F2_midpoint) |>
+  write_csv(here("tidy_data", "all_tidy.csv"))
+
+knitr::kable(glimpse(all_tidy))
+
+
+```
+
+---
+
+# Corrplot stuff
+
+```{r}
 #| label: dur-psn-corrplot
 #| echo: false
 #| message: false
 #| warning: false
 
+cormatrix_psn=all_tidy[,c("speaker_id", "island_id", "duration", "intensity", "f0", "f2")]
 
+colnames(cormatrix_psn)=c("speaker", "island", "duration", "intensity", "f0", "f2")
+
+psn_corr=rcorr(as.matrix(cormatrix_psn))
+
+diag(psn_corr$P) <- 0
+
+corrplot(psn_corr$r, type="upper", method="color", tl.col="black", addCoef.col="red", p.mat=psn_corr$P, sig.level=0.05, insig="blank")
 
 ```
 

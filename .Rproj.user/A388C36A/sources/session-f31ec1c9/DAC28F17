@@ -1,9 +1,9 @@
 {
     "id": "DAC28F17",
-    "path": "~/AFLA_w_v/index.Rmd",
+    "path": "~/AFLA2026/index.Rmd",
     "project_path": "index.Rmd",
     "type": "r_markdown",
-    "hash": "2152815854",
+    "hash": "14820291",
     "contents": "",
     "dirty": false,
     "created": 1781105268088.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "29,3",
-        "scrollLine": "15"
+        "cursorPosition": "1329,83",
+        "scrollLine": "1311"
     },
     "folds": "",
-    "lastKnownWriteTime": 1781109508,
+    "lastKnownWriteTime": 1793556026,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1781109508045,
+    "last_content_update": 1793556026423,
     "read_only": false,
     "read_only_alternatives": []
 }
