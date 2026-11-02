@@ -3,24 +3,24 @@
     "path": "~/GitHub/CIM_w_v/manuscript/AFLA_manuscript.Rmd",
     "project_path": null,
     "type": "r_markdown",
-    "hash": "1550649035",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1793029676896.0,
-    "source_on_save": false,
+    "source_on_save": true,
     "relative_order": 5,
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "25,13",
-        "scrollLine": "0"
+        "cursorPosition": "709,0",
+        "scrollLine": "709"
     },
     "folds": "",
-    "lastKnownWriteTime": 1793042017,
+    "lastKnownWriteTime": 1793642604,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1793042017722,
+    "last_content_update": 1793642605002,
     "read_only": false,
     "read_only_alternatives": []
 }

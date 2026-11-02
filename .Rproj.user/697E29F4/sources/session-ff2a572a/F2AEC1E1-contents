@@ -30,30 +30,31 @@ output            : papaja::apa6_pdf
 #| label: setup-libs
 
 library("tidyverse")
-library("papaja")
-library("ds4ling")
 library("tidyr")
 library("here")
 library("lme4")
 library("mgcv")
-library("devtools")
 library("broom")
 library("ggplot2")
-#library("ggplot")
-library("lmerTest")
-library(modelsummary)
-library(broom.mixed) # Required back-end for mixed models
+library(knitr)
+library(kableExtra)
+library("Hmisc")
+library("corrplot")
+library("vcd")
 library("sjPlot")
+library("lmerTest")
+library("modelsummary")
 theme_update(# axis labels
-             axis.title = element_text(size = 17),
+             axis.title = element_text(size = 16),
              # tick labels
-             axis.text = element_text(size = 10),
+             axis.text = element_text(size = 16),
              # title 
-             title = element_text(size = 20))
+             title = element_text(size = 19))
 
-source(here::here("scripts", "libs.R"))
+#source(here::here("libs", "libs.R"))
 
 untidy_data <- read_csv(here("untidy_data", "cim-v-w-202410.csv"))
+
 
 ```
 
@@ -774,7 +775,7 @@ ggplot(data = wv_df, aes(hue, x = island, y = freq, fill = surface_form)) +
     x = "Surface form by island",
     y = "Frequency"
   ) + 
-  theme_classic()
+  theme_minimal()
 
 ```
 
@@ -928,6 +929,65 @@ modelsummary::msummary(list("Duration" = mod_dur_psn,
                        output = 'flextable', 
                        caption = "Each Variable by Person")
 
+
+```
+
+
+# Corrplot stuff
+
+```{r}
+#| label: retidy
+#| message: false
+#| echo: true
+#| warning: false
+
+all_tidy <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+    pivot_longer(
+    cols = c("f0_50.point"), 
+    names_to = "percent",
+    values_to = "f0"
+  ) |>
+  mutate(speaker_id = as.numeric(fct_inorder(speaker)),
+         island_id = as.numeric(fct_inorder(island))) |>
+  arrange(speaker_id, island) |>  
+  select(speaker_id, island_id, duration, intensity = intensity_midpoint, f0, f2 = F2_midpoint) |>
+  write_csv(here("tidy_data", "all_tidy.csv"))
+
+```
+
+
+```{r}
+#| label: print-all-tidy
+#| echo: false
+#| message: false
+#| warning: false
+
+
+knitr::kable(glimpse(all_tidy))
+
+
+```
+
+
+This creates a table of the correlations between each variable pair and the p-values of those correlations
+
+
+```{r}
+#| label: psn-corrplot
+#| echo: false
+#| message: false
+#| warning: false
+
+cormatrix_psn=all_tidy[,c("speaker_id", "island_id", "duration", "intensity", "f0", "f2")]
+
+colnames(cormatrix_psn)=c("speaker", "island", "duration", "intensity", "f0", "f2")
+
+psn_corr=rcorr(as.matrix(cormatrix_psn))
+
+diag(psn_corr$P) <- 0
+
+corrplot(psn_corr$r, type="upper", method="color", tl.col="black", addCoef.col="red", p.mat=psn_corr$P, sig.level=0.05, insig="blank")
 
 ```
 

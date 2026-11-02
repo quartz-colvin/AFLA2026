@@ -70,6 +70,7 @@ library("broom")
 library("ggplot2")
 library(knitr)
 library(kableExtra)
+library("Hmisc")
 library("corrplot")
 library("vcd")
 library("sjPlot")
@@ -284,7 +285,7 @@ knitr::kable(head(tidy_dur), format = "html") %>%
 plot_dur <- tidy_dur |>
   ggplot() +
   aes(x = island, y = duration, color = island) +
-  geom_boxplot() +
+  geom_boxplot(outliers = FALSE) +
   labs(
     title = "Compare [v] duration by island",
     x = "Island",
@@ -459,7 +460,7 @@ Intensity **ranges were much larger** for all islands than they were for duratio
 plot_intense <- tidy_intense |>
   ggplot() +
   aes(x = island, y = intensity, color = island) +
-  geom_boxplot() +
+  geom_boxplot(outliers = FALSE) +
   labs(
     title = "Compare [v] intensity by island",
     x = "Island",
@@ -867,7 +868,7 @@ knitr::kable(head(tidy_f2), format = "html") %>%
 #| warning: false
 
 f2_plot <- tidy_f2 |>
-  ggplot() +
+  ggplot(outliers = FALSE) +
   aes(x = island, y = f2, color = island) +
   geom_boxplot() +
   labs(
@@ -1100,7 +1101,7 @@ class: center, middle
 mod_dur_psn <- lmer(duration ~ speaker + (1|island) + (1|word), data = tidy_dur)
 
 plot_dur_psn <- tidy_dur |>
-  ggplot() +
+  ggplot(outliers = FALSE) +
   aes(x = speaker, y = duration, color = island) +
   geom_boxplot() +
   labs(
@@ -1146,7 +1147,7 @@ tab_model(mod_dur_psn, string.intercept = "speaker [AAN]")
 mod_intense_psn <- lmer(intensity ~ speaker + (1|island) + (1|word), data = tidy_intense)
 
 plot_intense_psn <- tidy_intense |>
-  ggplot() +
+  ggplot(outliers = FALSE) +
   aes(x = speaker, y = intensity, color = island) +
   geom_boxplot() +
   labs(
@@ -1192,7 +1193,7 @@ mod_f0_psn <- lmer(f0 ~ speaker + (1|island) + (1|word), data = tidy_f0)
 plot_f0_psn <- tidy_f0 |>
   ggplot() +
   aes(x = speaker, y = f0, color = island) +
-  geom_boxplot() +
+  geom_boxplot(outliers = FALSE) +
   labs(
     title = "Compare [v] F0 by speaker",
     x = "Speaker",
@@ -1236,7 +1237,7 @@ mod_f2_psn <- lmer(f2 ~ speaker + (1|island) + (1|word), data = tidy_f2)
 plot_f2_psn <- tidy_f2 |>
   ggplot() +
   aes(x = speaker, y = f2, color = island) +
-  geom_boxplot() +
+  geom_boxplot(outliers = FALSE) +
   labs(
     title = "Compare [v] F2 by speaker",
     x = "Speaker",
@@ -1285,16 +1286,145 @@ modelsummary::msummary(list("Duration" = mod_dur_psn,
 # Corrplot stuff
 
 ```{r}
-#| label: dur-psn-corrplot
-#| echo: false
+#| label: retidy
 #| message: false
+#| echo: false
 #| warning: false
 
+all_tidy <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+    pivot_longer(
+    cols = c("f0_50.point"), 
+    names_to = "percent",
+    values_to = "f0"
+  ) |>
+  mutate(speaker_id = as.numeric(fct_inorder(speaker)),
+         island_id = as.numeric(fct_inorder(island))) |>
+  arrange(speaker_id, island) |>  
+  select(speaker_id, island_id, duration, intensity = intensity_midpoint, f0, f2 = F2_midpoint) |>
+  write_csv(here("tidy_data", "all_tidy.csv"))
+
+knitr::kable(glimpse(all_tidy))
 
 
 ```
 
 
 
+---
 
+# Corrplot stuff
+
+That creates a table of the correlations between each variable pair and the p-values of those correlations
+
+
+```{r}
+#| label: dur-psn-corrplot
+#| echo: true
+#| message: false
+#| warning: false
+
+cormatrix_psn=all_tidy[,c("speaker_id", "island_id", "duration", "intensity", "f0", "f2")]
+
+colnames(cormatrix_psn)=c("speaker", "island", "duration", "intensity", "f0", "f2")
+
+psn_corr=rcorr(as.matrix(cormatrix_psn))
+
+diag(psn_corr$P) <- 0
+
+```
+
+---
+
+```{r}
+#| label: corrplot-print
+#| echo: true
+#| warning: false
+#| message: false
+
+my_palette <- colorRampPalette(c("#B2182B", "white", "#6D8196"))(100)
+
+corrplot(psn_corr$r, type="upper", method="color", col=my_palette, tl.col="black", addCoef.col="black", p.mat=psn_corr$P, sig.level=0.05, insig="blank")
+
+```
+
+---
+
+```{r}
+#| label: final-form
+#| echo: true
+#| message: false
+#| warning: false
+
+wv_dat <- tidy_f2 |> 
+  select(island, word, f2) |> 
+  mutate(surface_form = if_else(
+    condition = f2 > 850,
+    true = "v",
+    false = "w"
+    ) 
+  ) 
+
+```
+
+---
+
+```{r}
+#| label: w-or-v-final
+#| echo: false
+
+freq_table <- wv_dat |>
+  group_by(island, surface_form) |>
+  summarise(total_count=n(),
+            .groups = 'drop') |>
+  mutate(freq = paste0(round(total_count))
+  ) |>
+  select(island, surface_form, freq) |>
+  drop_na() |>
+  t()
+
+knitr::kable(freq_table)
+
+```
+
+---
+
+
+```{r}
+#| label: wv-df
+#| message: false
+#| echo: true
+#| warning: false
+
+
+island <- c("Atiu", "Atiu", "Mauke", "Mauke", "Penrhyn", "Penrhyn", "Rarotonga", "Rarotonga")
+surface_form <- c("v", "w", "v", "w", "v", "w", "v", "w")
+freq <- c(97, 21, 424, 26, 163, 7, 151, 5)
+
+# Create the data frame
+wv_df <- data.frame(Island = island, Surface_form = surface_form, freq = freq, color_group = c('w','v'))
+
+```
+
+
+
+---
+
+```{r}
+#| label: wv-barplot
+#| warning: false
+#| echo: false
+#| message: false
+
+ggplot(data = wv_df, 
+       aes(x = island, y = freq, fill = color_group)) + 
+  geom_col() + 
+  labs(
+    x = "Surface form by island",
+    y = "Frequency"
+  ) + 
+  scale_color_manual(values = c('green','blue')) +
+  theme_classic()
+
+```
 
