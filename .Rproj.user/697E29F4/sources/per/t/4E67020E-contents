@@ -289,7 +289,7 @@ plot_dur <- tidy_dur |>
   labs(
     title = "Compare [v] duration by island",
     x = "Island",
-    y = "Duration"
+    y = "Duration (s)"
   ) 
 
 
@@ -464,7 +464,7 @@ plot_intense <- tidy_intense |>
   labs(
     title = "Compare [v] intensity by island",
     x = "Island",
-    y = "Intensity"
+    y = "Intensity (dB)"
   ) 
 
 ```
@@ -715,7 +715,7 @@ f0_plot <- tidy_f0 |>
   ) +
   labs(
     title = "Compare F0 across islands", 
-    x = "Duration", 
+    x = "Duration (s)", 
     y = "F0 (Hz)"
   ) 
 ```

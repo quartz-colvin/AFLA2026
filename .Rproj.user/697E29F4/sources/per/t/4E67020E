@@ -3,7 +3,7 @@
     "path": "~/GitHub/AFLA2026/index.Rmd",
     "project_path": "index.Rmd",
     "type": "r_markdown",
-    "hash": "277685485",
+    "hash": "2996902392",
     "contents": "",
     "dirty": false,
     "created": 1781526441515.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "668,29",
-        "scrollLine": "656"
+        "cursorPosition": "580,0",
+        "scrollLine": "570"
     },
     "folds": "",
-    "lastKnownWriteTime": 1793645479,
+    "lastKnownWriteTime": 1793750387,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1793645479141,
+    "last_content_update": 1793750387685,
     "read_only": false,
     "read_only_alternatives": []
 }

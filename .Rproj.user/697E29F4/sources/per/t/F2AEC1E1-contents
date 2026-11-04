@@ -209,6 +209,17 @@ mod_dur <- lmer(duration ~ island + (1|speaker) + (1|word), data = tidy_dur)
 
 ```
 
+Duration anova
+
+```{r}
+#| label: print-dur-summary
+#| echo: false
+#| message: false
+#| warning: false
+
+tab_model(mod_dur, string.intercept = "island [Atiu]")
+
+```
 
 
 
@@ -283,6 +294,20 @@ Now that we know the general patterns, we can fit our linear mixed effects model
 #| warning: false
 
 mod_intense <- lmer(intensity ~ island + (1|speaker) + (1|word), data = tidy_intense)
+
+```
+
+
+Intensity anova
+
+```{r}
+#| label: summary-intensity
+#| echo: false
+#| warning: false
+#| message: false
+
+tab_model(mod_intense, string.intercept = "island [Atiu]")
+
 
 ```
 
@@ -922,12 +947,12 @@ mod_f2_psn <- lmer(f2 ~ speaker + (1|island) + (1|word), data = tidy_f2)
 #| message: false
 #| warning: false
 
-modelsummary::msummary(list("Duration" = mod_dur_psn, 
-                            "Intensity" = mod_intense_psn,
-                            "F0" = mod_f0_psn, 
-                            "F2" = mod_f2_psn),
-                       output = 'flextable', 
-                       caption = "Each Variable by Person")
+#modelsummary::msummary(list("Duration" = mod_dur_psn, 
+#                            "Intensity" = mod_intense_psn,
+#                            "F0" = mod_f0_psn, 
+#                            "F2" = mod_f2_psn),
+#                       output = 'flextable', 
+#                       caption = "Each Variable by Person")
 
 
 ```
