@@ -287,7 +287,6 @@ plot_dur <- tidy_dur |>
   aes(x = island, y = duration, color = island) +
   geom_boxplot() +
   labs(
-    title = "Compare [v] duration by island",
     x = "Island",
     y = "Duration (s)"
   ) 
@@ -462,7 +461,6 @@ plot_intense <- tidy_intense |>
   aes(x = island, y = intensity, color = island) +
   geom_boxplot(outliers = FALSE) +
   labs(
-    title = "Compare [v] intensity by island",
     x = "Island",
     y = "Intensity (dB)"
   ) 
@@ -869,11 +867,11 @@ knitr::kable(head(tidy_f2), format = "html") %>%
 #| warning: false
 
 f2_plot <- tidy_f2 |>
-  ggplot(outliers = FALSE) +
+  ggplot() +
   aes(x = island, y = f2, color = island) +
   geom_boxplot() +
+  geom_hline(yintercept = 800) +
   labs(
-    title = "Compare [v] F2 by island",
     x = "Island",
     y = "F2 (Hz)"
   )
@@ -1106,7 +1104,6 @@ plot_dur_psn <- tidy_dur |>
   aes(x = speaker, y = duration, color = island) +
   geom_boxplot() +
   labs(
-    title = "Compare [v] duration by speaker",
     x = "Speaker",
     y = "Duration"
   )
@@ -1148,11 +1145,10 @@ tab_model(mod_dur_psn, string.intercept = "speaker [AAN]")
 mod_intense_psn <- lmer(intensity ~ speaker + (1|island) + (1|word), data = tidy_intense)
 
 plot_intense_psn <- tidy_intense |>
-  ggplot(outliers = FALSE) +
+  ggplot() +
   aes(x = speaker, y = intensity, color = island) +
   geom_boxplot() +
   labs(
-    title = "Compare [v] intensity by speaker",
     x = "Speaker",
     y = "Intensity"
   )
@@ -1194,9 +1190,8 @@ mod_f0_psn <- lmer(f0 ~ speaker + (1|island) + (1|word), data = tidy_f0)
 plot_f0_psn <- tidy_f0 |>
   ggplot() +
   aes(x = speaker, y = f0, color = island) +
-  geom_boxplot(outliers = FALSE) +
+  geom_boxplot() +
   labs(
-    title = "Compare [v] F0 by speaker",
     x = "Speaker",
     y = "F0"
   )
@@ -1240,7 +1235,6 @@ plot_f2_psn <- tidy_f2 |>
   aes(x = speaker, y = f2, color = island) +
   geom_boxplot(outliers = FALSE) +
   labs(
-    title = "Compare [v] F2 by speaker",
     x = "Speaker",
     y = "F2"
   )
@@ -1430,6 +1424,30 @@ ggplot(data = wv_df,
 
 ```
 
+---
+
+# F0 boxplot
+
+```{r}
+#| label: boxplot-f0
+#| message: false
+#| echo: false
+#| warning: false
+
+boxplot_f0 <- tidy_f0 |>
+  ggplot() +
+  aes(x = island, y = f0, color = island) +
+  geom_boxplot() +
+  geom_hline(yintercept = 80) +
+  labs(
+    x = "Island",
+    y = "F0 (Hz)"
+  ) 
+
+print(boxplot_f0)
+
+```
+
 
 ---
 
@@ -1476,12 +1494,39 @@ knitr::kable(head(tidy_f1), format = "html") %>%
 plot_f1 <- tidy_f1 |>
   ggplot() +
   aes(x = island, y = f1, color = island) +
-  geom_boxplot(outliers = TRUE) +
+  geom_boxplot() +
+  geom_hline(yintercept = 250) +
   labs(
-    title = "Compare F1 by island",
     x = "Island",
     y = "F1 (Hz)"
   ) 
 
 print(plot_f1)
 ```
+
+
+---
+
+# t.tests 
+
+
+```{r}
+#| label: t-tests
+#| echo: false
+#| warning: false
+#| message: false
+
+#dur_t <- t.test(duration ~ island, data = tidy_dur, 
+#                var.equal = FALSE, conf.level = 0.95)
+
+#f0_t <- t.test(f0 ~ island, data = tidy_f0)
+
+#f1_t <- t.test(f1 ~ island, data = tidy_f1)
+
+#f2_t <- t.test(f2 ~ island, data = tidy_f2)
+
+#print(dur_t)
+
+```
+
+
