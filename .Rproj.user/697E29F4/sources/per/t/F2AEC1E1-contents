@@ -1017,6 +1017,66 @@ corrplot(psn_corr$r, type="upper", method="color", tl.col="black", addCoef.col="
 ```
 
 
+# Reporting or Results
+
+Reporting: duration summary
+
+```{r}
+
+summ_dur <- summary(mod_dur)$coefficients
+knitr::kable(summ_dur)
+```
+
+Reporting: F0 summary
+
+```{r}
+summ_f0 <- summary(mod_f0)$coefficients
+knitr::kable(summ_f0)
+```
+
+Reporting: F1 summary
+
+```{r}
+
+tidy_f1 <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+  arrange(island, Word) |>  
+  select(speaker, island, word = Word, f1 = F1_midpoint) |>
+  write_csv(here("tidy_data", "tidy_f1.csv"))
+
+mod_f1 <- lmer(f1 ~ island + (1|speaker) + (1|word), data=tidy_f1)
+
+summ_f1 <- summary(mod_f1)$coefficients
+knitr::kable(summ_f1)
+```
+
+Reporting: F2 summary
+
+```{r}
+summ_f2 <- summary(mod_f2)$coefficients
+knitr::kable(summ_f2)
+
+```
+
+Reporting: duration Anova 
+
+```{r}
+#| label: anova-dur
+#| warning: false
+#| echo: true
+#| message: false
+
+dur_null <- lm(duration ~ 1, data = tidy_dur)
+
+dur_island <- lm(duration ~ island, data = tidy_dur)
+
+dur_add <- lmer(duration ~ island + (1|speaker), data = tidy_dur)
+
+dur_anova <- anova(mod_dur, dur_add, dur_island, dur_null)
+
+knitr::kable(dur_anova)
+
+```
 
 
 # References

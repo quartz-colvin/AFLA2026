@@ -1479,6 +1479,8 @@ knitr::kable(head(tidy_f1), format = "html") %>%
   kable_styling() %>%
   column_spec(1:4, width = "1in") 
 
+mod_f1 <- lmer(f1 ~ island + (1|speaker) + (1|word), data=tidy_f1)
+
 ```
 
 ---
@@ -1504,29 +1506,65 @@ plot_f1 <- tidy_f1 |>
 print(plot_f1)
 ```
 
-
 ---
 
-# t.tests 
-
+# Anova 
 
 ```{r}
-#| label: t-tests
-#| echo: false
+#| label: anova-dur
 #| warning: false
+#| echo: true
 #| message: false
 
-#dur_t <- t.test(duration ~ island, data = tidy_dur, 
-#                var.equal = FALSE, conf.level = 0.95)
+dur_null <- lm(duration ~ 1, data = tidy_dur)
 
-#f0_t <- t.test(f0 ~ island, data = tidy_f0)
+dur_island <- lm(duration ~ island, data = tidy_dur)
 
-#f1_t <- t.test(f1 ~ island, data = tidy_f1)
+dur_add <- lmer(duration ~ island + (1|speaker), data = tidy_dur)
 
-#f2_t <- t.test(f2 ~ island, data = tidy_f2)
+dur_anova <- anova(mod_dur, dur_add, dur_island, dur_null)
 
-#print(dur_t)
+knitr::kable(dur_anova)
 
 ```
 
+
+
+---
+
+# Reporting: duration summary
+
+```{r}
+
+summ_dur <- summary(mod_dur)$coefficients
+knitr::kable(summ_dur)
+```
+
+---
+
+# Reporting: F0 summary
+
+```{r}
+summ_f0 <- summary(mod_f0)$coefficients
+knitr::kable(summ_f0)
+```
+
+---
+
+# Reporting: F1 summary
+
+```{r}
+summ_f1 <- summary(mod_f1)$coefficients
+knitr::kable(summ_f1)
+```
+
+---
+
+# Reporting: F2 summary
+
+```{r}
+summ_f2 <- summary(mod_f2)$coefficients
+knitr::kable(summ_f2)
+
+```
 
