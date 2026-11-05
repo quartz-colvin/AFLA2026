@@ -285,7 +285,7 @@ knitr::kable(head(tidy_dur), format = "html") %>%
 plot_dur <- tidy_dur |>
   ggplot() +
   aes(x = island, y = duration, color = island) +
-  geom_boxplot(outliers = FALSE) +
+  geom_boxplot() +
   labs(
     title = "Compare [v] duration by island",
     x = "Island",
@@ -659,7 +659,8 @@ tidy_f0 <- untidy_data |>
     cols = c("f0_50.point"), 
     names_to = "percent",
     values_to = "f0"
-  ) |>
+  ) |> 
+    mutate(f0 = replace_na(f0, 0)) |>
   arrange(island, Word) |>  
   select(speaker, island, word = Word, f0, duration) |>
   write_csv(here("tidy_data", "tidy_f0.csv"))
@@ -1299,9 +1300,10 @@ all_tidy <- untidy_data |>
     values_to = "f0"
   ) |>
   mutate(speaker_id = as.numeric(fct_inorder(speaker)),
-         island_id = as.numeric(fct_inorder(island))) |>
+         island_id = as.numeric(fct_inorder(island)),
+         f0 = replace_na(f0, 0)) |>
   arrange(speaker_id, island) |>  
-  select(speaker_id, island_id, duration, intensity = intensity_midpoint, f0, f2 = F2_midpoint) |>
+  select(speaker_id, island_id, duration, f1 = F1_midpoint, f0, f2 = F2_midpoint) |>
   write_csv(here("tidy_data", "all_tidy.csv"))
 
 knitr::kable(glimpse(all_tidy))
@@ -1324,9 +1326,9 @@ That creates a table of the correlations between each variable pair and the p-va
 #| message: false
 #| warning: false
 
-cormatrix_psn=all_tidy[,c("speaker_id", "island_id", "duration", "intensity", "f0", "f2")]
+cormatrix_psn=all_tidy[,c("speaker_id", "island_id", "duration", "f0", "f1", "f2")]
 
-colnames(cormatrix_psn)=c("speaker", "island", "duration", "intensity", "f0", "f2")
+colnames(cormatrix_psn)=c("speaker", "island", "duration", "f0", "f1", "f2")
 
 psn_corr=rcorr(as.matrix(cormatrix_psn))
 
@@ -1428,3 +1430,58 @@ ggplot(data = wv_df,
 
 ```
 
+
+---
+
+# F1 by island
+
+```{r}
+#| label: tidy-f1
+#| echo: false
+#| warning: false
+#| message: false
+
+tidy_f1 <- untidy_data |>
+  filter(TextGridLabel == "v") |>  
+  arrange(island, Word) |>  
+  select(speaker, island, word = Word, f1 = F1_midpoint) |>
+  write_csv(here("tidy_data", "tidy_f1.csv"))
+
+```
+
+```{r}
+#| label: glimpse-f1
+#| echo: false
+#| message: false
+#| warning: false
+
+#knitr::kable(head(tidy_intense), format = "html", column_spec(1:4, width="1in")) 
+
+knitr::kable(head(tidy_f1), format = "html") %>%
+  kable_styling() %>%
+  column_spec(1:4, width = "1in") 
+
+```
+
+---
+
+# Plot F1
+
+```{r}
+#| label: f1-plot
+#| warning: false
+#| message: false
+#| echo: false
+
+plot_f1 <- tidy_f1 |>
+  ggplot() +
+  aes(x = island, y = f1, color = island) +
+  geom_boxplot(outliers = TRUE) +
+  labs(
+    title = "Compare F1 by island",
+    x = "Island",
+    y = "F1 (Hz)"
+  ) 
+
+print(plot_f1)
+```
